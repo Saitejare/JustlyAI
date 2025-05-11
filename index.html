@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>JustlyAI - Legal Chatbot</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <h1>JustlyAI 💡 <span class="subtitle">Free Legal Help in Your Language</span></h1>
+        
+        <div class="language-toggle">
+            <button onclick="setLanguage('en')">English</button>
+            <button onclick="setLanguage('hi')">हिंदी</button>
+            <button onclick="setLanguage('te')">తెలుగు</button>
+        </div>
+        
+        <div id="chatbox"></div>
+        <input type="text" id="userInput" placeholder="Ask about divorce, wages, property...">
+        <button onclick="sendQuery()">Ask</button>
+    </div>
+
+    <script>
+        const legalKnowledge = {
+            "legal_cases": [
+                {
+                    "category": "Property",
+                    "keywords": ["property", "land", "house", "eviction"],
+                    "answer": "No. Landlord must give 1-month written notice. If forced out, file a complaint at the police station.",
+                    "hi": {
+                        "answer": "नहीं। मकान मालिक को 1-माह का लिखित नोटिस देना होगा। जबरदस्ती होने पर पुलिस में शिकायत करें।"
+                    },
+                    "te": {
+                        "answer": "లేదు. యజమాని 1-నెల నోటీసు ఇవ్వాలి. బలవంతంగా తొలగిస్తే, పోలీస్ స్టేషన్లో ఫిర్యాదు చేయండి."
+                    }
+                },
+                {
+                    "category": "Farmer Rights",
+                    "keywords": ["farm", "land", "crop", "compensation"],
+                    "answer": "Illegal! You must get compensation under Land Acquisition Act. Contact the District Collector with land records.",
+                    "hi": {
+                        "answer": "गैरकानूनी! भूमि अधिग्रहण कानून के तहत मुआवजा मिलना चाहिए। जिला कलेक्टर से जमीन के कागजात के साथ संपर्क करें।"
+                    },
+                    "te": {
+                        "answer": "చట్టవిరుద్ధం! ల్యాండ్ అక్విజిషన్ చట్టం ప్రకారం మీకు పరిహారం ఇవ్వాలి. భూమి రికార్డులతో జిల్లా కలెక్టర్ను సంప్రదించండి."
+                    }
+                },
+                {
+                    "category": "Family",
+                    "keywords": ["divorce", "child custody", "maintenance"],
+                    "answer": "Family courts usually favor mothers for kids under 5. File a custody petition with marriage and child birth proofs.",
+                    "hi": {
+                        "answer": "5 साल से छोटे बच्चों की कस्टडी आमतौर पर माँ को मिलती है। शादी और बच्चे के जन्म प्रमाणपत्र के साथ अर्जी दें।"
+                    },
+                    "te": {
+                        "answer": "5 సంవత్సరాల కంటే చిన్న పిల్లలకు తల్లులకే కస్టడీ ఇస్తారు. వివాహ మరియు పుట్టిన ప్రమాణపత్రాలతో కోర్టులో అర్జీ దాఖలు చేయండి."
+                    }
+                },
+                {
+                    "category": "Traffic",
+                    "keywords": ["fine", "driving license", "rash driving"],
+                    "answer": "₹5,000 fine or 3-month jail. Apply for license online at parivahan.gov.in to avoid trouble.",
+                    "hi": {
+                        "answer": "₹5,000 जुर्माना या 3-माह की जेल। परेशानी से बचने के लिए parivahan.gov.in पर ऑनलाइन आवेदन करें।"
+                    },
+                    "te": {
+                        "answer": "₹5,000 జరిమానా లేదా 3-నెలల జైలు. ఇబ్బంది నివారించడానికి parivahan.gov.in వద్ద లైసెన్స్ కోసం అప్లై చేయండి."
+                    }
+                }
+            ]
+        };
+
+        let currentLanguage = 'en';
+        const placeholders = {
+            'en': "Ask about divorce, wages, property...",
+            'hi': "तलाक, वेतन, संपत्ति के बारे में पूछें...",
+            'te': "డివోర్స్, వేతనాలు, ఆస్తి గురించి అడగండి..."
+        };
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            document.getElementById('userInput').placeholder = placeholders[lang];
+        }
+
+        function sendQuery() {
+            const query = document.getElementById('userInput').value.trim().toLowerCase();
+            if (!query) return;
+            document.getElementById('chatbox').innerHTML += 
+                `<div class="user-message">${query}</div>`;
+
+            let response = {
+                'en': "Sorry, I couldn't find an answer. Try keywords like 'divorce', 'wages', or 'property'.",
+                'hi': "क्षमा करें, मुझे जवाब नहीं मिला। 'तलाक', 'वेतन' या 'संपत्ति' के बारे में पूछें।",
+                'te': "క్షమించండి, నాకు సమాధానం కనుగొనబడలేదు. 'డివోర్స్', 'వేతనాలు' లేదా 'ఆస్తి' గురించి అడగండి."
+            }[currentLanguage];
+
+            for (const case of legalKnowledge.legal_cases) {
+                if (case.keywords.some(keyword => query.includes(keyword))) {
+                    response = case[currentLanguage]?.answer || case.answer;
+                    break;
+                }
+            }
+
+            document.getElementById('chatbox').innerHTML += 
+                `<div class="bot-message">${response}</div>`;
+            
+            document.getElementById('userInput').value = '';
+            document.getElementById('chatbox').scrollTop = 
+                document.getElementById('chatbox').scrollHeight;
+        }
+
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendQuery();
+        });
+    </script>
+</body>
+</html>
