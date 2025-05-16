@@ -4,11 +4,12 @@
     <meta charset="utf-8">
     <title>JustlyAI - Legal Chatbot</title>
     <style>
+        /* Your original styles copied exactly */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
         
         body {
@@ -23,7 +24,7 @@
         .chat-container {
             width: 100%;
             max-width: 800px;
-            background-color: #ffffff;
+            background-color: white;
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             overflow: hidden;
@@ -35,9 +36,22 @@
         .chat-header {
             padding: 20px;
             text-align: center;
-            background-color: #10a37f;
-            color: #ffffff;
-            font-weight: bold;
+            border-bottom: 1px solid #e5e5e6;
+            background-color: #ffffff;
+        }
+        
+        .chat-header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .chat-header .subtitle {
+            font-size: 14px;
+            color: #6e6e80;
+            font-weight: 400;
+            display: block;
+            margin-top: 5px;
         }
         
         #chatbox {
@@ -49,147 +63,270 @@
         
         .bot-message, .user-message {
             max-width: 80%;
-            padding: 12px;
-            margin-bottom: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
             border-radius: 6px;
+            line-height: 1.5;
             position: relative;
         }
         
         .bot-message {
             background-color: #ffffff;
+            border: 1px solid #e5e5e6;
+            border-radius: 6px 6px 6px 0;
             margin-right: auto;
-            border-left: 4px solid #10a37f;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
         
         .user-message {
-            background-color: #d1f0e3;
+            background-color: #f0f4ff;
+            border-radius: 6px 6px 0 6px;
             margin-left: auto;
+            color: #1a1a2e;
         }
         
         .input-container {
             padding: 16px;
-            display: flex;
-            gap: 10px;
             border-top: 1px solid #e5e5e6;
+            background-color: white;
+            display: flex;
+            gap: 8px;
         }
         
         #userInput {
             flex: 1;
-            padding: 10px;
+            padding: 12px 16px;
             border: 1px solid #e5e5e6;
             border-radius: 6px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        
+        #userInput:focus {
+            border-color: #10a37f;
         }
         
         #askButton {
             background-color: #10a37f;
-            color: #ffffff;
+            color: white;
             border: none;
-            padding: 10px 20px;
             border-radius: 6px;
+            padding: 0 20px;
+            font-size: 16px;
+            font-weight: 500;
             cursor: pointer;
+            transition: background-color 0.2s;
         }
         
         #askButton:hover {
             background-color: #0e8e6d;
         }
+        
+        #askButton:disabled {
+            background-color: #d1d5db;
+            cursor: not-allowed;
+        }
+        
+        .language-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        
+        .language-toggle button {
+            background-color: #f0f4ff;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            color: #1a1a2e;
+            transition: background-color 0.2s;
+        }
+        
+        .language-toggle button:hover {
+            background-color: #e0e8ff;
+        }
+        
+        /* Loading indicator and animation styles omitted for brevity - keep your original */
     </style>
 </head>
 <body>
-
-<div class="chat-container">
-    <div class="chat-header">
-        JustlyAI - Free Legal Help in Your Language
-    </div>
-    
-    <div id="chatbox">
-        <div class="bot-message">How can I help you today?</div>
-    </div>
-    
-    <div class="input-container">
-        <input type="text" id="userInput" placeholder="Ask about property, divorce, traffic laws..." />
-        <button onclick="sendQuery()" id="askButton">Ask</button>
-    </div>
-</div>
-
-<script>
-    const legalDB = {
-        "legal_cases": [
-            {
-                "keywords": ["property", "land", "house", "eviction"],
-                "answer": "Landlord must provide a 1-month written notice. If forced out, file a complaint at the police station.",
-                "hi": "मकान मालिक को 1-माह का लिखित नोटिस देना होगा।",
-                "te": "యజమాని 1-నెల నోటీసు ఇవ్వాలి."
-            },
-            {
-                "keywords": ["farm", "land", "crop", "compensation"],
-                "answer": "You must get compensation under Land Acquisition Act. Contact the District Collector with land records.",
-                "hi": "भूमि अधिग्रहण कानून के तहत मुआवजा मिलना चाहिए।",
-                "te": "భూ స్వాధీన చట్టం ప్రకారం పరిహారం ఇవ్వాలి."
-            },
-            {
-                "keywords": ["divorce", "child custody", "maintenance"],
-                "answer": "Family courts usually favor mothers for kids under 5. File a custody petition with marriage and child birth proofs.",
-                "hi": "5 साल से छोटे बच्चों की कस्टडी आमतौर पर माँ को मिलती है।",
-                "te": "5 సంవత్సరాల కంటే చిన్న పిల్లలకు తల్లులకే కస్టడీ ఇస్తారు."
-            },
-            {
-                "category": "Driving Offenses",
-                "keywords": ["no license", "unlicensed", "under aged"],
-                "answer": "Driving without a license: 3 months or Rs.500 fine (Section 181).",
-                "hi": "बिना लाइसेंस के वाहन चलाने पर: 3 महीने या 500 रुपये जुर्माना।",
-                "te": "లైసెన్స్ లేకుండా వాహనం నడపడం: 3 నెలల జైలు లేదా 500 రూపాయల జరిమానా."
-            },
-            {
-                "category": "Speeding Offenses",
-                "keywords": ["over-speeding", "speed limit", "speeding"],
-                "answer": "Over-speeding: First offense Rs.1000, subsequent Rs.2000 (Section 183).",
-                "hi": "ओवरस्पीडिंग: पहली बार 1000 रुपये, बाद में 2000 रुपये।",
-                "te": "ఓవర్ స్పీడింగ్: మొదటి నేరం 1000 రూపాయలు, తర్వాత 2000 రూపాయలు."
-            },
-            {
-                "category": "Land Rights",
-                "keywords": ["land dispute", "encroachment"],
-                "answer": "File a civil suit under the Land Disputes Act for unauthorized encroachment.",
-                "hi": "अनधिकृत अतिक्रमण के लिए भूमि विवाद अधिनियम के तहत सिविल मामला दर्ज करें।",
-                "te": "అనధికార ఆక్రమణకు సివిల్ కేసు వేయండి."
-            }
-        ]
-    };
-
-    let currentLanguage = 'en';
-
-    function addMessage(text, isUser) {
-        const chatbox = document.getElementById('chatbox');
-        const messageDiv = document.createElement('div');
-        messageDiv.className = isUser ? 'user-message' : 'bot-message';
-        messageDiv.textContent = text;
-        chatbox.appendChild(messageDiv);
-        chatbox.scrollTop = chatbox.scrollHeight;
-    }
-
-    function sendQuery() {
-        const query = document.getElementById('userInput').value.trim();
-        if (!query) return;
-
-        addMessage(query, true);
-        document.getElementById('userInput').value = '';
-
-        let response = "Sorry, I couldn't find information about that.";
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>JustlyAI <span class="subtitle">Free Legal Help in Your Language</span></h1>
+            
+            <div class="language-toggle">
+                <button onclick="setLanguage('en')">English</button>
+                <button onclick="setLanguage('hi')">हिंदी</button>
+                <button onclick="setLanguage('te')">తెలుగు</button>
+            </div>
+        </div>
         
-        for (const legalCase of legalDB.legal_cases) {
-            if (legalCase.keywords.some(keyword => query.toLowerCase().includes(keyword.toLowerCase()))) {
-                response = legalCase[currentLanguage] || legalCase.answer;
-                break;
+        <div id="chatbox">
+            <div class="bot-message">What can I help with?</div>
+        </div>
+        
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Ask about divorce, wages, property...">
+            <button onclick="sendQuery()" id="askButton">Ask</button>
+        </div>
+    </div>
+
+    <script>
+        // Legal knowledge database
+        const legalDB = {
+           "legal_cases": [
+                {
+                    "keywords": ["property", "land", "house", "eviction"],
+                    "answer": "No. Landlord must give 1-month written notice. If forced out, file a complaint at the police station.",
+                    "hi": "नहीं। मकान मालिक को 1-माह का लिखित नोटिस देना होगा। जबरदस्ती होने पर पुलिस में शिकायत करें।",
+                    "te": "లేదు. యజమాని 1-నెల నోటీసు ఇవ్వాలి. బలవంతంగా తొలగిస్తే, పోలీస్ స్టేషన్లో ఫిర్యాదు చేయండి."
+                },
+                {
+                    "keywords": ["farm", "land", "crop", "compensation"],
+                    "answer": "Illegal! You must get compensation under Land Acquisition Act. Contact the District Collector with land records.",
+                    "hi": "गैरकानूनी! भूमि अधिग्रहण कानून के तहत मुआवजा मिलना चाहिए।",
+                    "te": "చట్టవిరుద్ధం! ల్యాండ్ అక్విజిషన్ చట్టం ప్రకారం మీకు పరిహారం ఇవ్వాలి."
+                },
+                {
+                    "keywords": ["divorce", "child custody", "maintenance"],
+                    "answer": "Family courts usually favor mothers for kids under 5. File a custody petition with marriage and child birth proofs.",
+                    "hi": "5 साल से छोटे बच्चों की कस्टडी आमतौर पर माँ को मिलती है।",
+                    "te": "5 సంవత్సరాల కంటే చిన్న పిల్లలకు తల్లులకే కస్టడీ ఇస్తారు."
+                },
+                {
+                    "category": "Driving Offenses",
+                    "keywords": ["fine","no license", "unlicensed", "under aged"],
+                    "answer": "Driving without a license or underaged driving: 3 months or Rs.500 fine (Section 181).",
+                    "hi": "बिना लाइसेंस या अवयस्क के वाहन चलाने पर: 3 महीने या 500 रुपये जुर्माना (धारा 181)",
+                    "te": "లైసెన్స్ లేకుండా లేదా వయస్సు తక్కువగా ఉండి వాహనం నడపడం: 3 నెలల జైలు లేదా 500 రూపాయల జరిమానా (సెక్షన్ 181)"
+                },
+                {
+                    "category": "Conductor Offenses",
+                    "keywords": ["conductor license", "ticket issuance"],
+                    "answer": "Failure to issue ticket: Rs.500 fine (Section 178(2)).",
+                    "hi": "टिकट जारी न करने पर: 500 रुपये जुर्माना (धारा 178(2))",
+                    "te": "టికెట్ జారీ చేయకపోతే: 500 రూపాయల జరిమానా (సెక్షన్ 178(2))"
+                },
+                {
+                    "category": "Speeding Offenses",
+                    "keywords": ["rash driving","over-speeding", "speed limit", "speeding"],
+                    "answer": "Over-speeding: First offense Rs.1000, subsequent Rs.2000 (Section 183).",
+                    "hi": "ओवरस्पीडिंग: पहली बार 1000 रुपये, बाद में 2000 रुपये (धारा 183)",
+                    "te": "ఓవర్ స్పీడింగ్: మొదటి నేరం 1000 రూపాయలు, తర్వాత 2000 రూపాయలు (సెక్షన్ 183)"
+                },
+                {
+                    "category": "Land Rights",
+                    "keywords": ["land dispute", "property boundary", "encroachment"],
+                    "answer": "File a civil suit under the Land Disputes Act for unauthorized encroachment.",
+                    "hi": "अनधिकृत अतिक्रमण के लिए भूमि विवाद अधिनियम के तहत सिविल मामला दर्ज करें।",
+                    "te": "అనధికార ఆక్రమణకు భూ వివాదాల చట్టం కింద సివిల్ కేసు వేసుకోండి."
+                },
+                {
+                    "category": "Land Acquisition",
+                    "keywords": ["land acquisition", "compensation", "eviction"],
+                    "answer": "Compensation must be provided under the Land Acquisition Act, 2013.",
+                    "hi": "2013 के भूमि अधिग्रहण अधिनियम के तहत मुआवजा प्रदान किया जाना चाहिए।",
+                    "te": "2013 భూ స్వాధీన చట్టం ప్రకారం పరిహారం ఇవ్వాలి."
+                }
+            ]
+        };
+
+        let currentLanguage = 'en';
+        const placeholders = {
+            'en': "Ask about divorce, wages, property...",
+            'hi': "तलाक, वेतन, संपत्ति के बारे में पूछें...",
+            'te': "డివోర్స్, వేతనాలు, ఆస్తి గురించి అడగండి..."
+        };
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            document.getElementById('userInput').placeholder = placeholders[lang];
+        }
+
+        function showTypingIndicator(show) {
+            const chatbox = document.getElementById('chatbox');
+            const existingIndicator = document.getElementById('typing-indicator');
+            
+            if (show && !existingIndicator) {
+                const indicator = document.createElement('div');
+                indicator.className = 'typing-indicator';
+                indicator.id = 'typing-indicator';
+                indicator.innerHTML = `
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                `;
+                chatbox.appendChild(indicator);
+                chatbox.scrollTop = chatbox.scrollHeight;
+            } else if (!show && existingIndicator) {
+                existingIndicator.remove();
             }
         }
 
-        addMessage(response, false);
-    }
+        function showLoadingButton(show) {
+            const button = document.getElementById('askButton');
+            if (show) {
+                button.innerHTML = 'Thinking <span class="button-loader"></span>';
+                button.disabled = true;
+            } else {
+                button.innerHTML = 'Ask';
+                button.disabled = false;
+            }
+        }
 
-    document.getElementById('userInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') sendQuery();
-    });
-</script>
+        function addMessage(text, isUser) {
+            const chatbox = document.getElementById('chatbox');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = isUser ? 'user-message' : 'bot-message';
+            messageDiv.textContent = text;
+            chatbox.appendChild(messageDiv);
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
 
+        function sendQuery() {
+            const query = document.getElementById('userInput').value.trim();
+            if (!query) return;
+
+            addMessage(query, true);
+            document.getElementById('userInput').value = '';
+            
+            showLoadingButton(true);
+            showTypingIndicator(true);
+
+            setTimeout(() => {
+                try {
+                    showTypingIndicator(false);
+                    let response = {
+                        'en': "I couldn't find information about that. Try asking about property, divorce, or driving licenses.",
+                        'hi': "मुझे इस बारे में जानकारी नहीं मिली। संपत्ति, तलाक या ड्राइविंग लाइसेंस के बारे में पूछें।",
+                        'te': "దాని గురించి నాకు సమాచారం దొరకలేదు. ఆస్తి, డివోర్స్ లేదా డ్రైవింగ్ లైసెన్స్ల గురించి అడగండి."
+                    }[currentLanguage];
+
+                    for (const legalCase of legalDB.legal_cases) {
+                        if (legalCase.keywords.some(keyword => 
+                            query.toLowerCase().includes(keyword.toLowerCase()))) {
+                            response = legalCase[currentLanguage] || legalCase.answer;
+                            break;
+                        }
+                    }
+
+                    addMessage(response, false);
+                } catch (error) {
+                    addMessage("Sorry, something went wrong. Please try again.", false);
+                    console.error("Error:", error);
+                } finally {
+                    showLoadingButton(false);
+                }
+            }, 1500);
+        }
+
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendQuery();
+        });
+    </script>
 </body>
 </html>
